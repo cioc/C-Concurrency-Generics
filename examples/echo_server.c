@@ -4,62 +4,65 @@
 #include <string.h>
 #include <stdint.h>
 #include <unistd.h>
+#include <arpa/inet.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <netdb.h>
 #include <pthread.h>
 #include "../src/producer_consumer.h"
 
 producer_consumer prod_cons;
 
 int sock;
-struct addrinfo try, *result;
+struct sockaddr_in echo_server;
 
 void *
 echo_listener(void *data)
 {
-  memset(&try, 0, sizeof(try));
-  try.ai_family = AF_INET;
-  try.ai_socktype = SOCK_STREAM;
-  try.ai_flags = AI_PASSIVE;
-  getaddrinfo(NULL, "8080", &try, &result);
 
-  sock = socket(result->ai_family, 
-                result->ai_socktype, 
-                result->ai_protocol);
+  memset(&echo_server, 0, sizeof(echo_server));
+  echo_server.sin_family = AF_INET;
+  echo_server.sin_addr.s_addr = htonl(INADDR_ANY);
+  echo_server.sin_port = 8080;
+
+  sock = socket(AF_INET, 
+                SOCK_STREAM, 
+                0);
   if (sock < 0) {
     printf("Failed to create socket\n");
     exit(1);
   }
   
   int r1 = bind(sock, 
-                result->ai_addr, 
-                result->ai_addrlen);
+                (struct sockaddr *)&echo_server, 
+                sizeof(echo_server));
   if (r1 < 0) {
     printf("Failed to bind\n");
     exit(1);
   }
  
-  r1 = listen(sock,
-              20);
+  r1 = listen(sock, 20);
   if (r1 < 0) {
     printf("Failed to listen\n");
     exit(1);
   }
 
   int connection;
-  
-  socklen_t addr_size;
-  struct sockaddr_storage connect_addr;
 
-  while (connection = accept(sock, 
-                             (struct sockaddr *)connect_addr),
-                             &addr_size > 0) {
-    int64_t *number = (int64_t *)malloc(sizeof(int64_t));
+  printf("Begin accept\n");
+  while (1) {
+    connection = accept(sock, NULL,NULL);
+    if (connection < 0) {
+      printf("Accept error\n");
+      exit(1);
+    }
+    printf("accepted connection\n");
+    int *number = (int *)malloc(sizeof(int));
     *number = connection;
     produce(&prod_cons, (void *)number);
   }
- 
- }
+  printf("End accept\n");
+  exit(0);
 }
 
 void *
@@ -67,14 +70,16 @@ echo_handler(void *data)
 {
   pthread_t self = pthread_self(); 
   
-  int64_t connection = (int)*((int64_t *)(data));
- 
+  int connection = (int)*((int *)(data));
+
   char buf[100];
 
-  int received = recv(connection, buf, 100, 0);
+  int received = recv(connection, buf, 99, 0);
+
+  printf("Consumer thread %i has received %s\n", (int)self, buf);
 
   if (received > 0) {
-    send(connection, buf, received, 0);
+    write(connection, buf, received);
   }
 
   close(connection);
@@ -88,7 +93,7 @@ main(int argc, char **args)
   bool init_result = init_producer_consumer(&prod_cons, 
                                             1, 
                                             5, 
-                                            sizeof(int64_t),
+                                            sizeof(int),
                                             100,
                                             echo_listener,
                                             echo_handler);

@@ -2,6 +2,8 @@ all: examples
 
 lib_objs = thread_pool.o producer_consumer.o
 
+example_names = sleep echo_server echo_client
+
 libs = -lpthread
 cflags = -std=gnu99 -Werror
 
@@ -13,13 +15,27 @@ thread_pool.o: ../src/thread_pool.c
 producer_consumer.o: ../src/producer_consumer.c
 	gcc $(cflags) -c ../src/producer_consumer.c $(libs)
 
-examples: lib echo
+examples: lib sleep echo 
 
-echo: $(lib_objs) main.o
-	gcc $(lib_objs) main.o -o echo $(libs) 
+echo: echo_server echo_client
 
-main.o: ../examples/main.c
-	gcc $(cflags) -c ../examples/main.c $(libs)
+sleep: $(lib_objs) sleep.o
+	gcc $(lib_objs) sleep.o -o sleep $(libs) 
+
+echo_server: $(lib_objs) echo_server.o
+	gcc $(lib_objs) echo_server.o -o echo_server $(libs)
+
+echo_client: echo_client.o
+	gcc echo_client.o -o echo_client
+
+echo_server.o: ../examples/echo_server.c
+	gcc $(cflags) -c ../examples/echo_server.c $(libs)
+
+echo_client.o: ../examples/echo_client.c
+	gcc $(cflags) -c ../examples/echo_client.c
+
+sleep.o: ../examples/sleep.c
+	gcc $(cflags) -c ../examples/sleep.c $(libs)
 
 clean:
-	rm -rf *.o echo 
+	rm -rf *.o $(example_names)

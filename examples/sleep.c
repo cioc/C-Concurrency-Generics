@@ -12,11 +12,10 @@
 producer_consumer prod_cons;
 
 void *
-echo_listener(void *data)
+sleep_producer(void *data)
 {
   int i = 0; 
   while (i < 10) {
-    printf("LISTENER\n");
     int64_t *number = (int64_t *)malloc(sizeof(int64_t));
     *number = i;
     produce(&prod_cons, (void *)number);
@@ -25,7 +24,7 @@ echo_listener(void *data)
 }
 
 void *
-echo_handler(void *data)
+sleep_handler(void *data)
 {
   pthread_t self = pthread_self(); 
   printf("%d says Woopie number: %d\n", (int)self, (int)*((int64_t *)(data)));
@@ -36,14 +35,14 @@ echo_handler(void *data)
 int 
 main(int argc, char **args)
 {
-  printf("STARTING ECHO SERVER\n");
+  printf("STARTING SLEEP EXAMPLE\n");
   bool init_result = init_producer_consumer(&prod_cons, 
                                             1, 
                                             5, 
                                             sizeof(int64_t),
                                             100,
-                                            echo_listener,
-                                            echo_handler);
+                                            sleep_producer,
+                                            sleep_handler);
   if (init_result) {  
     printf("INIT SUCCESS\n");
     start_producer_consumer(&prod_cons);
