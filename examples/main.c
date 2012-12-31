@@ -7,6 +7,8 @@
 #include <pthread.h>
 #include "../src/producer_consumer.h"
 
+//TODO - NEED TO RENAME FUNCTIONS
+
 producer_consumer prod_cons;
 
 void *
