@@ -1,57 +1,30 @@
 #include <stdlib.h>
-#include <errno.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
 #include <unistd.h>
-#include <arpa/inet.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <netdb.h>
-#include <pthread.h>
 #include "../src/producer_consumer.h"
+#include "../src/net_support.h"
 
 producer_consumer prod_cons;
 
-int sock;
-struct sockaddr_in echo_server;
+int server_socket;
 
 void *
 echo_listener(void *data)
 {
-
-  memset(&echo_server, 0, sizeof(echo_server));
-  echo_server.sin_family = AF_INET;
-  echo_server.sin_addr.s_addr = htonl(INADDR_ANY);
-  echo_server.sin_port = 8080;
-
-  sock = socket(AF_INET, 
-                SOCK_STREAM, 
-                0);
-  if (sock < 0) {
+  server_socket = tcp_server(8080);
+  if (server_socket < 0) {
     printf("Failed to create socket\n");
     exit(1);
   }
   
-  int r1 = bind(sock, 
-                (struct sockaddr *)&echo_server, 
-                sizeof(echo_server));
-  if (r1 < 0) {
-    printf("Failed to bind\n");
-    exit(1);
-  }
- 
-  r1 = listen(sock, 20);
-  if (r1 < 0) {
-    printf("Failed to listen\n");
-    exit(1);
-  }
-
   int connection;
-
   printf("Begin accept\n");
   while (1) {
-    connection = accept(sock, NULL,NULL);
+    connection = accept(server_socket, NULL,NULL);
     if (connection < 0) {
       printf("Accept error\n");
       exit(1);
