@@ -19,6 +19,8 @@ typedef struct {
   uint32_t buffer_max;
   void *(*produce_function)(void *);
   void *(*consume_function)(void *);
+  void *(*consume_startup)(void *);
+  void *consume_startup_args;
 } producer_consumer;
 
 void produce(producer_consumer *, void *);
@@ -28,6 +30,9 @@ bool init_producer_consumer(producer_consumer *prod_cons,
                         size_t size_of_obj,
                         uint32_t max_queue,
                         void *(*produce_function)(void *),
-                        void *(*consume_function)(void *));
+                        void *(*consume_function)(void *),
+                        void *(*consume_startup)(void *),
+                        void *consume_startup_arg);
+
 void start_producer_consumer(producer_consumer *);
 #endif

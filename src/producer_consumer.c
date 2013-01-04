@@ -43,6 +43,10 @@ void *
 internal_consume(void *pc)
 {
   producer_consumer * prod_cons = (producer_consumer *)pc;
+  if (prod_cons->consume_startup != NULL) {
+    prod_cons->consume_startup(prod_cons->consume_startup_args);       
+  }
+  
   while(1) {
     pthread_mutex_lock(prod_cons->cond_mutex);
     consume_loop:
@@ -77,7 +81,9 @@ init_producer_consumer( producer_consumer *prod_cons,
                         size_t size_of_obj,
                         uint32_t max_queue,
                         void *(*produce_function)(void *),
-                        void *(*consume_function)(void *))
+                        void *(*consume_function)(void *),
+                        void *(consume_startup)(void *),
+                        void *consume_startup_args)
 {
   prod_cons->produce_function = produce_function;
   prod_cons->consume_function = consume_function;
@@ -97,6 +103,8 @@ init_producer_consumer( producer_consumer *prod_cons,
     printf("POOL(S) FAILED TO INIT\n");
     return false;
   }
+  prod_cons->consume_startup = consume_startup;
+  prod_cons->consume_startup_args = consume_startup_args; 
   prod_cons->buffer_max = max_queue;
   prod_cons->buffer_item_size = size_of_obj;
   prod_cons->buffer_tail = 0;
