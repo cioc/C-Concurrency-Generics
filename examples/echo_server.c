@@ -69,7 +69,9 @@ main(int argc, char **args)
                                             sizeof(int),
                                             100,
                                             echo_listener,
-                                            echo_handler);
+                                            echo_handler,
+                                            NULL,
+                                            NULL);
   if (init_result) {  
     printf("INIT SUCCESS\n");
     start_producer_consumer(&prod_cons);

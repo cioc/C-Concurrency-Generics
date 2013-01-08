@@ -40,8 +40,7 @@ internal_boot(void *pool_reference)
 {
   thread_pool *tp = (thread_pool *)pool_reference;
   pthread_mutex_lock(tp->startup_mutex);
-  //START HERE
-  //TODO - ADD PTHREAD_T ID TO POOL LISTING  
+  tp->id_mapping[tp->startup_counter] = pthread_self();
   tp->startup_counter += 1; 
   pthread_mutex_unlock(tp->startup_mutex);
   if (tp->use_pass) {
@@ -86,3 +85,18 @@ free_pool(thread_pool *pool)
   return 0;
 }
 
+//NOTE: POOL MUST BE STARTED
+//This returns the id of currently running thread in the pool.
+uint8_t 
+get_pool_id(thread_pool *pool)
+{
+  pthread_t pt = pthread_self();
+  for (uint32_t i = 0; i < pool->thread_count; ++i) {
+    if (pthread_equal(pt, pool->id_mapping[i])) {
+      return i;
+    }
+  }
+  return -1;
+}
+
+//EOF

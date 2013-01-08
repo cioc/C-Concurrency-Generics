@@ -24,5 +24,6 @@ bool init_pool(thread_pool *, uint8_t, void *(*)(void *), void *);
 uint8_t start_pool(thread_pool *pool);
 void wait_pool(thread_pool *pool);
 uint8_t free_pool(thread_pool *pool);
+uint8_t get_pool_id(thread_pool *pool);
 
 #endif

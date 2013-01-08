@@ -42,7 +42,9 @@ main(int argc, char **args)
                                             sizeof(int64_t),
                                             100,
                                             sleep_producer,
-                                            sleep_handler);
+                                            sleep_handler,
+                                            NULL,
+                                            NULL);
   if (init_result) {  
     printf("INIT SUCCESS\n");
     start_producer_consumer(&prod_cons);
