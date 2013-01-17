@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <stdbool.h>
 #include <unistd.h>
 #include "../src/net_support.h"
 
@@ -11,8 +12,11 @@ int client_socket;
 
 int 
 main(int argc, char **args) {
- 
-  client_socket = tcp_client("localhost", 8080); 
+  //this will use UNIX domain sockets 
+  client_socket = reliable_connection(NET_ACTIVE, 0, true,"/tmp/tcpipiv3.serv");//tcp_client("localhost", 8080); 
+  //to use tcp instead:
+  //client_socket = reliable_connection(NET_ACTIVE, 8080, false, "localhost");
+  
   if (client_socket < 0) {
     printf("Failed to create tcp_client\n");
     exit(1);

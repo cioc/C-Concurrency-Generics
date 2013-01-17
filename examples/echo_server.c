@@ -15,7 +15,12 @@ int server_socket;
 void *
 echo_listener(void *data)
 {
-  server_socket = tcp_server(8080);
+  //this will use UNIX domain sockets
+  server_socket = reliable_connection(NET_PASSIVE, 0, true , "/tmp/tcpipiv3.serv");//tcp_server(8080);
+  
+  //this will use tcp
+  //server_socket = reliable_connection(NET_PASSIVE, 8080, false, NULL);
+
   if (server_socket < 0) {
     printf("Failed to create socket\n");
     exit(1);
